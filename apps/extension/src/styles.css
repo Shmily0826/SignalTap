@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+#root {
+  height: 100%;
+}
+
+@layer components {
+  .st-card {
+    @apply bg-signal-panel border border-signal-border rounded-lg p-3;
+  }
+  .st-section-title {
+    @apply text-xs font-semibold uppercase tracking-wide text-signal-muted mb-1;
+  }
+  .st-chip {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium;
+  }
+  .st-btn {
+    @apply rounded-md px-3 py-1.5 text-sm font-medium transition-colors;
+  }
+  .st-btn-primary {
+    @apply bg-signal-accent text-white hover:opacity-90;
+  }
+  .st-btn-ghost {
+    @apply text-signal-muted hover:text-signal-text hover:bg-signal-border/50;
+  }
+  .st-source-link {
+    @apply text-signal-accent underline decoration-dotted underline-offset-2 cursor-pointer hover:opacity-80;
+  }
+}

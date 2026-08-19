@@ -1,0 +1,19 @@
+{
+  "name": "signaltap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SignalTap - one tap, just the signal. AI information-judgment layer for the page you're already viewing.",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:unit": "npm run test --workspace @signaltap/extension",
+    "test:backend": "npm run test --workspace @signaltap/backend",
+    "dev:backend": "npm run dev --workspace @signaltap/backend",
+    "build:extension": "npm run build --workspace @signaltap/extension",
+    "build:backend": "npm run build --workspace @signaltap/backend",
+    "test:e2e": "npm run test:e2e --workspace @signaltap/extension"
+  },
+  "packageManager": "npm@10.9.7"
+}

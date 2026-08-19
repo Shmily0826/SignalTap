@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+.pnpm-debug.log
+
+# Build output
+dist/
+out/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Extension unpacked build artifacts
+apps/extension/dist/
+
+# Playwright
+test-results/
+playwright-report/
+.cache/
+
+# Misc
+coverage/
