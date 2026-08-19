@@ -1,6 +1,6 @@
 import { ExtractedContent, MainContentItem } from "@signaltap/schemas";
 import { Adapter } from "./types";
-import { SIGNAL_ATTR, cleanText, isNoise, isVisible } from "./dom";
+import { SIGNAL_ATTR, cleanText, extractDiscussionItems, isNoise, isVisible } from "./dom";
 
 const ADAPTER_ID = "GenericVisibleTextAdapter";
 const ADAPTER_VERSION = "1.0.0";
@@ -46,7 +46,7 @@ export const GenericVisibleTextAdapter: Adapter = {
       author: null,
       publishedAt: null,
       mainContent,
-      discussionItems: [],
+      discussionItems: extractDiscussionItems(doc),
       captureScope: "visible_content",
       extractionWarnings: [
         {

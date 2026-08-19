@@ -12,7 +12,7 @@ test("article loop: extract, analyze, click-to-source, close & reopen cached", a
   try {
     const page = await context.newPage();
     await page.goto("http://localhost:8099/article.html");
-    const tabId = await tabIdOf(context, "http://localhost:8099/article.html");
+    const tabId = await tabIdOf(context);
     expect(tabId).toBeGreaterThan(0);
 
     // 1) Open the side panel page (stand-in for the real side panel UI).
@@ -23,7 +23,9 @@ test("article loop: extract, analyze, click-to-source, close & reopen cached", a
     await expect(
       panel.locator(".text-2xl.font-bold").first()
     ).toBeVisible({ timeout: 30000 });
-    await expect(panel.locator("text=Signal")).toBeVisible({ timeout: 30000 });
+    await expect(panel.locator(".st-section-title", { hasText: "Signal" })).toBeVisible({
+      timeout: 30000,
+    });
 
     const scoreText = await panel.locator(".text-2xl.font-bold").first().innerText();
     const score = parseFloat(scoreText);

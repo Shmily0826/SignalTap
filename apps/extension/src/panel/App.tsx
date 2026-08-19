@@ -5,7 +5,7 @@ import {
   RelevanceProfile,
   SourceReference,
 } from "@signaltap/schemas";
-import { requestAnalysis, submitFeedback } from "../api";
+import { requestAnalysis, submitFeedback, deleteRemoteAnalysis } from "../api";
 import {
   cacheKey,
   clearHistory,
@@ -159,8 +159,9 @@ export default function App() {
         setAnalysisId(analysisId);
         setResult(result);
         setCached(false);
-        setPhase("done");
 
+        // Persist the cache BEFORE signalling "done", so the stored result is
+        // always committed even if the panel is closed the moment it renders.
         if (settings?.historyEnabled !== false && settings?.contentRetention !== false) {
           await putCached(key, {
             url: extracted.url,
@@ -175,6 +176,7 @@ export default function App() {
             createdAt: new Date().toISOString(),
           });
         }
+        setPhase("done");
       } catch (e: any) {
         stopStages();
         if (e?.name === "AbortError" || e?.type === "cancelled") {
@@ -237,7 +239,6 @@ export default function App() {
   const deleteCurrent = async () => {
     if (cacheKeyOf) await deleteCached(cacheKeyOf);
     if (analysisId) {
-      const { deleteRemoteAnalysis } = await import("../api");
       await deleteRemoteAnalysis(analysisId);
     }
     setResult(null);

@@ -8,6 +8,7 @@ import {
   SIGNAL_ATTR,
   canonicalUrl,
   cleanText,
+  extractDiscussionItems,
   isNoise,
   isVisible,
   metaContent,
@@ -144,7 +145,7 @@ export const GenericArticleAdapter: Adapter = {
       author,
       publishedAt,
       mainContent,
-      discussionItems: [],
+      discussionItems: extractDiscussionItems(doc),
       captureScope,
       extractionWarnings: warnings,
     };

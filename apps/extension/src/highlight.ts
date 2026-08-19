@@ -23,6 +23,10 @@ const HIGHLIGHT_CSS = `
   left: 4px;
   white-space: nowrap;
 }
+/* Label text is rendered via a pseudo-element so it is NOT part of the
+   element's textContent. This keeps re-extraction (cache hits, profile
+   switches) from picking up the "SignalTap source" string. */
+.sigsoil-label::before { content: attr(data-label); }
 `;
 
 let styleInjected = false;
@@ -66,7 +70,7 @@ export function highlightSource(
 
   const label = doc.createElement("span");
   label.className = "sigsoil-label";
-  label.textContent = "SignalTap source";
+  label.setAttribute("data-label", "SignalTap source");
   label.setAttribute("role", "status");
   el.setAttribute("data-sigsoil-labelled", "true");
   el.appendChild(label);

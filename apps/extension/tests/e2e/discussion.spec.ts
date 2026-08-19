@@ -12,7 +12,7 @@ test("discussion loop: nested comments, consensus & disagreement, scope disclosu
   try {
     const page = await context.newPage();
     await page.goto("http://localhost:8099/discussion.html");
-    const tabId = await tabIdOf(context, "http://localhost:8099/discussion.html");
+    const tabId = await tabIdOf(context);
     expect(tabId).toBeGreaterThan(0);
 
     const panel = await openPanel(context, extId, tabId);
@@ -28,8 +28,12 @@ test("discussion loop: nested comments, consensus & disagreement, scope disclosu
     });
 
     // Consensus and disagreement sections appear (from clustering).
-    await expect(panel.locator("text=Consensus").first()).toBeVisible({ timeout: 30000 });
-    await expect(panel.locator("text=Disagreement").first()).toBeVisible({ timeout: 30000 });
+    await expect(panel.locator(".st-section-title", { hasText: "Consensus" })).toBeVisible({
+      timeout: 30000,
+    });
+    await expect(
+      panel.locator(".st-section-title", { hasText: "Disagreement" })
+    ).toBeVisible({ timeout: 30000 });
 
     // Limitation is disclosed: only loaded comments are analyzed.
     await expect(
@@ -37,7 +41,7 @@ test("discussion loop: nested comments, consensus & disagreement, scope disclosu
     ).toBeVisible({ timeout: 30000 });
 
     // Best comments section offers clickable source chips.
-    const bestChips = panel.locator("text=Best comments");
+    const bestChips = panel.locator(".st-section-title", { hasText: "Best comments" });
     await expect(bestChips.first()).toBeVisible({ timeout: 30000 });
 
     // Click a comment source -> the nested comment element highlights.

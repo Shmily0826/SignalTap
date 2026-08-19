@@ -3,7 +3,7 @@
   "name": "SignalTap",
   "version": "0.1.0",
   "description": "One tap. Just the signal. An AI information-judgment layer that analyzes the page you are already viewing.",
-  "minimum_chrome_version": 114,
+  "minimum_chrome_version": "114",
   "permissions": ["activeTab", "sidePanel", "storage", "scripting"],
   "background": {
     "service_worker": "background.js"

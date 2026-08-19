@@ -1,5 +1,7 @@
 /** DOM helpers shared by the extraction adapters. */
 
+import { DiscussionItem } from "@signaltap/schemas";
+
 declare global {
   interface CSS {
     escape(value: string): string;
@@ -120,6 +122,69 @@ export function computeParents<T extends DepthItem>(items: T[]): T[] {
         : null;
     item.parentId = parent;
     stack.push(item);
+  }
+  return items;
+}
+
+/* ------------------------- discussion item detection ----------------------- */
+
+const COMMENT_ROOT_SEL = '[data-testid*="comment" i], [class*="comment" i]';
+const COMMENT_TEXT_SEL = ".md, .text, .body, .comment-body, .comment-text, p";
+const COMMENT_AUTHOR_SEL =
+  '.author, .username, [data-testid*="author" i], [data-author]';
+const COMMENT_SCORE_SEL =
+  ".score, .votes, .points, [data-testid*=\"score\" i], [data-score]";
+
+function parseScore(raw: string | null | undefined): number {
+  if (!raw) return 0;
+  const digits = raw.replace(/[^0-9-]/g, "");
+  const n = parseInt(digits, 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+const DELETED_RE = /^\[?(deleted|removed|comment deleted)\]?$/i;
+
+/**
+ * Best-effort detection of comment blocks in a generic page. Looks for elements
+ * whose class or data-testid signals a comment, then pulls author / score /
+ * permalink / depth. Containers that wrap other comment candidates are skipped
+ * so we don't double-collect. Returns real discussion items (including deleted
+ * ones, flagged) for clustering and source grounding.
+ */
+export function extractDiscussionItems(doc: Document): DiscussionItem[] {
+  const roots = Array.from(doc.querySelectorAll<HTMLElement>(COMMENT_ROOT_SEL));
+  const items: DiscussionItem[] = [];
+  let n = 0;
+  for (const el of roots) {
+    // Skip wrappers (e.g. .comment-list) that contain nested comment candidates.
+    if (el.querySelector(COMMENT_ROOT_SEL)) continue;
+    const textEl = el.querySelector(COMMENT_TEXT_SEL);
+    const text = cleanText(textEl?.textContent ?? el.textContent ?? "");
+    if (text.length < 5) continue;
+
+    const authorEl = el.querySelector(COMMENT_AUTHOR_SEL);
+    const author = authorEl?.textContent?.trim() ?? null;
+    const score = parseScore(el.querySelector(COMMENT_SCORE_SEL)?.textContent);
+    const link = el.querySelector<HTMLAnchorElement>("a[href]");
+    const permalink = link?.getAttribute("href") ?? null;
+    const depthRaw = el.getAttribute("data-depth");
+    const depth =
+      depthRaw != null && /^\d+$/.test(depthRaw) ? parseInt(depthRaw, 10) : 0;
+    const deleted = DELETED_RE.test(text);
+
+    const id = `comment-${++n}`;
+    el.setAttribute(SIGNAL_ATTR, id);
+    items.push({
+      id,
+      parentId: null,
+      author,
+      text,
+      score,
+      depth,
+      permalink,
+      position: items.length + 1,
+      deleted,
+    });
   }
   return items;
 }
