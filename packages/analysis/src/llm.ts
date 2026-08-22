@@ -16,6 +16,7 @@ import {
   withRetry,
 } from "./provider";
 import { calculateWorthAttention } from "./score";
+import { validateGrounding } from "./grounding";
 
 const ALL_DIMENSIONS: WorthDimensionName[] = [
   "novelty",
@@ -236,7 +237,10 @@ export class OpenAIProvider implements AnalysisProvider {
     const reading = Math.max(1, Math.round((words || 200) / 200));
     const saved = Math.max(1, Math.round(reading * 0.4));
 
-    return {
+    // Trust boundary: model-provided source metadata is never trusted; every
+    // reference is re-validated and rebuilt from the extracted set.
+    return validateGrounding(
+      {
       schemaVersion: "1.0",
       provider: this.name,
       promptVersion: this.promptVersion,
@@ -275,6 +279,9 @@ export class OpenAIProvider implements AnalysisProvider {
         mainContentCount: req.extracted.mainContent.length,
         discussionCount: req.extracted.discussionItems.length,
       },
-    };
+      warnings: [],
+      },
+      req.extracted
+    ).result;
   }
 }

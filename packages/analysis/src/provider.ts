@@ -10,6 +10,7 @@ import {
   ProviderErrorType,
 } from "@signaltap/schemas";
 import { calculateWorthAttention } from "./score";
+import { validateGrounding } from "./grounding";
 import { MockClusteringProvider, summarizeClusters, ClusterResult } from "./cluster";
 
 export class ProviderError extends Error {
@@ -325,7 +326,7 @@ export class MockAnalysisProvider implements AnalysisProvider {
     );
     const timeSaved = Math.max(1, Math.round(readingMinutes * 0.4));
 
-    return {
+    const result: AnalysisResult = {
       schemaVersion: "1.0",
       provider: this.name,
       promptVersion: "mock-1.0",
@@ -377,7 +378,11 @@ export class MockAnalysisProvider implements AnalysisProvider {
         discussionCount: comments.length,
         clusters: clusterResult?.clusters.length,
       },
+      warnings: [],
     };
+    // Defense in depth: mock references are built internally, but the result
+    // still passes the same grounding gate as real model output.
+    return validateGrounding(result, extracted).result;
   }
 }
 

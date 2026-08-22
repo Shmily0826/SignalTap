@@ -215,6 +215,8 @@ export const AnalysisResult = z.object({
   score: WorthAttentionScore.optional(),
   // Grounding
   sourceReferences: z.array(SourceReference).default([]),
+  /** Grounding/diagnostic warnings appended post-analysis (e.g. grounding_dropped). */
+  warnings: z.array(ExtractionWarning).default([]),
   // Diagnostics (no sensitive content)
   stats: z
     .object({
