@@ -208,6 +208,15 @@ app.post("/v1/feedback", async (c) => {
   return new Response(null, { status: 204 });
 });
 
+// Read-only feedback log (sanitized metadata only). Used to verify the
+// feedback loop end-to-end and to track beta feedback arrival.
+app.get("/v1/feedback", (c) => {
+  if (REQUIRED_KEY && c.req.header("x-signaltap-key") !== REQUIRED_KEY) {
+    return errorRes("unauthorized", "Missing or invalid API key", 401);
+  }
+  return c.json({ count: feedbackLog.length, entries: feedbackLog });
+});
+
 function safeHost(u: string): string {
   try {
     return new URL(u).host;

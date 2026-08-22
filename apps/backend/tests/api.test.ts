@@ -127,6 +127,20 @@ describe("POST /v1/feedback", () => {
     });
     expect(res.status).toBe(400);
   });
+
+  it("GET /v1/feedback returns sanitized metadata entries submitted so far", async () => {
+    const res = await app.request("/v1/feedback");
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.count).toBeGreaterThanOrEqual(1);
+    expect(json.entries.length).toBe(json.count);
+    const entry = json.entries[json.entries.length - 1];
+    expect(entry.rating).toBe("down");
+    expect(entry.host).toBe("example.com");
+    // No raw content: only the length of the optional comment is kept.
+    expect(entry.commentLength).toBe(15);
+    expect(JSON.stringify(json.entries)).not.toContain("summary was off");
+  });
 });
 
 describe("content size limits", () => {
