@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Show HN: Local-first note app</title></head>
+<body>
+<tr class="athing">
+  <td class="title"><span class="titleline"><a href="https://example.com/app">Show HN: Local-first note app</a></span></td>
+</tr>
+<p class="toptext">We built a CRDT-based note app that syncs peer-to-peer. Feedback welcome, especially on conflict handling for large documents.</p>
+<table>
+  <tr class="comtr" id="un_1">
+    <td class="ind" width="0"></td>
+    <td>
+      <a class="hnuser">alice_dev</a>
+      <span class="head"><a href="item?id=1">1 hour ago</a></span>
+      <div class="commtext c00">Tried it for a week. Conflict resolution is solid but the mobile app drains battery badly.</div>
+    </td>
+  </tr>
+  <tr class="comtr" id="un_2">
+    <td class="ind"><img src="s.gif" width="40"></td>
+    <td>
+      <a class="hnuser">bob_crdt</a>
+      <div class="commtext c00">Battery issue is likely the sync polling loop. We fixed the same thing by moving to push notifications.</div>
+    </td>
+  </tr>
+  <tr class="comtr" id="un_3">
+    <td class="ind"><img src="s.gif" width="80"></td>
+    <td>
+      <a class="hnuser">carol</a>
+      <div class="commtext c00">Push notifications require a server though, that defeats the local-first pitch.</div>
+    </td>
+  </tr>
+  <tr class="comtr" id="un_4">
+    <td class="ind"><img src="s.gif" width="0"></td>
+    <td>
+      <a class="hnuser">dan_lurker</a>
+      <div class="commtext c00">[deleted]</div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

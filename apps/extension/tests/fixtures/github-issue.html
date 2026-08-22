@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><title>Sync conflicts on large documents · owner/repo</title></head>
+<body>
+<div class="gh-header">
+  <h1 class="js-issue-title">Sync conflicts on documents larger than 10MB</h1>
+</div>
+<div class="js-comment-container">
+  <a class="author">maintainer_bot</a>
+  <div class="js-comment-body markdown-body">
+    Since 2.4.0, editing a document larger than 10MB while offline produces merge conflicts on nearly every sync. Steps: open the 20MB sample doc, go offline, make edits in two clients, reconnect. Expected: CRDT merges cleanly. Actual: duplicate sections appear.
+  </div>
+</div>
+<div class="js-comment-container" data-depth="0">
+  <a class="author">contributor_a</a>
+  <span class="reaction-count">14</span>
+  <div class="markdown-body">
+    Reproduced on 2.4.1. Looks like the background segmenter splits large docs differently per client, so the CRDT sees mismatched operation boundaries.
+  </div>
+  <a href="https://github.com/owner/repo/issues/42#issuecomment-101">permalink</a>
+</div>
+<div class="js-comment-container" data-depth="1">
+  <a class="author">contributor_b</a>
+  <div class="markdown-body">
+    Confirmed the segmenter theory. Pinning segment size to a fixed 64KB in a local build made the conflicts disappear.
+  </div>
+</div>
+</body>
+</html>
