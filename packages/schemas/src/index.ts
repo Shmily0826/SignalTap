@@ -256,6 +256,7 @@ export const ProviderErrorType = z.enum([
   "provider_unavailable",
   "content_too_large",
   "cancelled",
+  "unauthorized",
   "unknown",
 ]);
 export type ProviderErrorType = z.infer<typeof ProviderErrorType>;

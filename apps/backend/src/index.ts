@@ -15,7 +15,7 @@ import { sanitizeRequest, MAX_REQUEST_BYTES } from "./validation";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const REQUIRED_KEY = process.env.SIGNALTAP_API_KEY ?? "";
-const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "*";
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "";
 const RATE_LIMIT = Number(process.env.RATE_LIMIT_PER_MIN ?? 20);
 
 type Stored = { status: "completed" | "failed"; result?: AnalysisResult };
@@ -69,10 +69,28 @@ function clientKey(c: any): string {
 
 const app = new Hono();
 
+// CORS: explicit CORS_ORIGIN=* opens everything (local dev opt-in only).
+// Unset (default): only extension origins and localhost may call the API.
+const CORS_LIST = CORS_ORIGIN.split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const EXTENSION_ORIGIN =
+  /^(chrome|edge|moz)-extension:\/\/[a-z0-9]{32}$/i;
+const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
 app.use(
   "*",
   cors({
-    origin: CORS_ORIGIN.split(",").map((s) => s.trim()),
+    origin: (origin: string) => {
+      if (CORS_LIST.includes("*")) return origin ?? "*";
+      // Non-browser clients (curl, tests, service workers without Origin) pass.
+      if (!origin) return undefined;
+      const allow =
+        CORS_LIST.includes(origin) ||
+        EXTENSION_ORIGIN.test(origin) ||
+        LOCAL_ORIGIN.test(origin);
+      return allow ? origin : undefined;
+    },
     allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowHeaders: ["content-type", "x-signaltap-key"],
   })
@@ -90,9 +108,9 @@ app.use("*", async (c, next) => {
 app.get("/health", (c) => c.json({ ok: true, schemaVersion: SCHEMA_VERSION }));
 
 app.post("/v1/analysis", async (c) => {
-  // Auth (optional).
+  // Auth: enforced only when SIGNALTAP_API_KEY is set (empty = open dev mode).
   if (REQUIRED_KEY && c.req.header("x-signaltap-key") !== REQUIRED_KEY) {
-    return errorRes("provider_unavailable", "Missing or invalid API key", 401);
+    return errorRes("unauthorized", "Missing or invalid API key", 401);
   }
   // Rate limit.
   if (rateLimited(clientKey(c))) {
@@ -165,6 +183,9 @@ app.delete("/v1/analysis/:id", (c) => {
 });
 
 app.post("/v1/feedback", async (c) => {
+  if (REQUIRED_KEY && c.req.header("x-signaltap-key") !== REQUIRED_KEY) {
+    return errorRes("unauthorized", "Missing or invalid API key", 401);
+  }
   let body: unknown;
   try {
     body = await c.req.json();

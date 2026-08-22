@@ -110,7 +110,7 @@ Environment template: `apps/backend/.env.example` → copy to `apps/backend/.env
 | --- | --- | --- |
 | `PORT` | `8787` | API port |
 | `SIGNALTAP_API_KEY` | *(empty)* | Optional client auth (`x-signaltap-key`). Empty = open dev mode. |
-| `CORS_ORIGIN` | `*` | Comma-separated allowed origins. Use `*` only for local dev. |
+| `CORS_ORIGIN` | *(unset)* | Comma-separated allowed origins. Unset = only extension (`chrome-extension://…`) and localhost origins. Set `*` explicitly for open local dev. |
 | `RATE_LIMIT_PER_MIN` | `20` | Per-client request budget |
 | `OPENAI_API_KEY` | *(empty)* | **Empty → deterministic mock provider.** Set to enable the real LLM. |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` | Any OpenAI-compatible endpoint |
@@ -157,9 +157,17 @@ Notes:
 
 Unit test coverage includes: adapter selection, article extraction, discussion normalization, source-ID stability, capture-scope classification, score calculation, schema validation, content fingerprinting, prompt-injection resistance, malformed model output, provider timeouts, rate limiting, and content-size limits.
 
-## 7. Packaging
+## 6b. Production-readiness status (honest note)
 
-```bash
+The MVP backend deliberately uses **in-memory storage and process-local fixed-window rate limiting**. That is fine for local dev, demos, and a small beta — it is **not production-ready**: restarts lose analyses, rate limits don't hold across instances, and `SIGNALTAP_API_KEY` auth is a single shared key.
+
+Minimal Cloudflare deployment touchpoints (interfaces already isolated):
+
+- `apps/backend/src/index.ts` — `store` (Map) and `windows` (rate-limit Map) are the only stateful globals; swap for Workers KV (analyses, TTL) and a Durable Object / KV counter (rate limiting).
+- `apps/backend/src/analysis.ts` — provider construction is env-driven and stateless; runs as-is on Workers (uses `fetch`).
+- Distributed rate limiting / per-user keys / secrets management are explicit future work, not claims of the current build.
+
+## 7. Packaging```bash
 # The build already emits everything Chrome needs in apps/extension/dist:
 #   manifest.json · background.js · content.js · sidepanel.html · assets/
 npm run build:extension
