@@ -75,6 +75,8 @@ export interface OpenAIProviderConfig {
   timeoutMs?: number;
   retries?: number;
   promptVersion?: string;
+  /** Cost/latency guardrail: hard cap on completion tokens. */
+  maxTokens?: number;
 }
 
 export class OpenAIProvider implements AnalysisProvider {
@@ -84,6 +86,7 @@ export class OpenAIProvider implements AnalysisProvider {
   private timeoutMs: number;
   private retries: number;
   private promptVersion: string;
+  private maxTokens: number;
 
   constructor(private readonly config: OpenAIProviderConfig) {
     this.baseUrl = (config.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "");
@@ -91,6 +94,7 @@ export class OpenAIProvider implements AnalysisProvider {
     this.timeoutMs = config.timeoutMs ?? 60000;
     this.retries = config.retries ?? 1;
     this.promptVersion = config.promptVersion ?? "llm-1.0";
+    this.maxTokens = config.maxTokens ?? 2000;
   }
 
   private buildMessages(req: AnalysisRequest): { system: string; user: string } {
@@ -162,6 +166,7 @@ export class OpenAIProvider implements AnalysisProvider {
         { role: "user", content: user },
       ],
       temperature: 0.2,
+      max_tokens: this.maxTokens,
     };
 
     const call = async (): Promise<AnalysisResult> => {
@@ -187,6 +192,13 @@ export class OpenAIProvider implements AnalysisProvider {
         );
       }
       const json = (await res.json()) as any;
+      // Cost/latency guardrail: numeric usage only — never log content.
+      const usage = json?.usage;
+      if (usage && typeof usage.prompt_tokens === "number") {
+        console.info(
+          `[llm] model=${this.model} prompt_tokens=${usage.prompt_tokens} completion_tokens=${usage.completion_tokens ?? "unknown"}`
+        );
+      }
       const content: string = json?.choices?.[0]?.message?.content ?? "";
       let parsed: any;
       try {
